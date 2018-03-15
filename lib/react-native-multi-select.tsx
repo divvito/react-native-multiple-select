@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import * as React from 'react';
 import {
   Text,
   View,
@@ -19,9 +19,9 @@ import styles, { colorPack } from './styles';
 // set UIManager LayoutAnimationEnabledExperimental
 if (UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
-} 
+}
 
-export default class MultiSelect extends Component {
+export default class MultiSelect extends React.PureComponent {
   static propTypes = {
     single: PropTypes.bool,
     selectedItems: PropTypes.array,
