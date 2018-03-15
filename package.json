@@ -2,18 +2,11 @@
   "name": "react-native-multiple-select-divvito",
   "version": "0.4.1",
   "description": "Simple multi-select component for react-native",
-  "main": "index.js",
+  "main": "built/index.js",
   "scripts": {
-    "precommit": "lint-staged",
     "test": "jest",
     "lint": "eslint lib/",
     "build": "tsc"
-  },
-  "lint-staged": {
-    "*.{js,jsx,json,css,ts,tsx},!built/**/*.{js}": [
-      "prettier --single-quote --write",
-      "git add"
-    ]
   },
   "repository": {
     "type": "git",
@@ -44,9 +37,7 @@
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.9.0",
-    "lint-staged": "^5.0.0",
-    "prettier": "^1.8.2"
+    "eslint-plugin-react": "^6.9.0"
   },
   "peerDependencies": {
     "lodash": "^4.17.4",
