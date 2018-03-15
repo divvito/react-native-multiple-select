@@ -16,11 +16,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import styles, { colorPack } from './styles';
 
-// set UIManager LayoutAnimationEnabledExperimental
-if (UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
 export default class MultiSelect extends React.PureComponent {
   static propTypes = {
     single: PropTypes.bool,
