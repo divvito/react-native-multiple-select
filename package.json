@@ -9,11 +9,8 @@
     "lint": "eslint lib/",
     "build": "tsc"
   },
-  "jest": {
-    "preset": "jest-react-native"
-  },
   "lint-staged": {
-    "*.{js,json,css,ts,tsx},!built/**/*.{js}": [
+    "*.{js,jsx,json,css,ts,tsx},!built/**/*.{js}": [
       "prettier --single-quote --write",
       "git add"
     ]
@@ -35,11 +32,7 @@
   },
   "homepage": "https://github.com/divvito/react-native-multiple-select#readme",
   "dependencies": {
-    "escape-string-regexp": "^1.0.5",
-    "lodash": "^4.17.5",
-    "react": "^16.2.0",
-    "react-native": "^0.54.2",
-    "react-native-vector-icons": "^4.5.0"
+    "escape-string-regexp": "^1.0.5"
   },
   "devDependencies": {
     "@types/escape-string-regexp": "^0.0.32",
@@ -47,21 +40,13 @@
     "@types/react": "^16.0.40",
     "@types/react-native": "^0.52.18",
     "@types/react-native-vector-icons": "^4.4.3",
-    "babel-eslint": "^7.1.1",
-    "babel-jest": "^18.0.0",
-    "babel-preset-react-native": "^1.9.1",
     "eslint": "^3.15.0",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.9.0",
-    "husky": "^0.14.3",
-    "jest": "^18.1.0",
-    "jest-react-native": "^18.0.0",
     "lint-staged": "^5.0.0",
-    "prettier": "^1.8.2",
-    "react-test-renderer": "^15.4.2",
-    "remote-redux-devtools": "^0.5.7"
+    "prettier": "^1.8.2"
   },
   "peerDependencies": {
     "lodash": "^4.17.4",
