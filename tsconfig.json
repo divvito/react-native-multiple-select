@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "./built",
+    "jsx": "react",
     "allowJs": true,
-    "target": "es6",
+    "target": "es2015",
     "noImplicitAny": true,
     "strictNullChecks": true
   },

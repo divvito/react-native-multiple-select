@@ -13,22 +13,40 @@
     "preset": "jest-react-native"
   },
   "lint-staged": {
-    "*.{js,json,css}": ["prettier --single-quote --write", "git add"]
+    "*.{js,json,css,ts,tsx},!built/**/*.{js}": [
+      "prettier --single-quote --write",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/divvito/react-native-multiple-select.git"
   },
-  "keywords": ["reactnative", "multiselect", "multi-select", "react-native"],
-  "author":
-    "Mustapha Babatunde Oluwaleke - Modified by Chris O'Kelly for Divvito",
+  "keywords": [
+    "reactnative",
+    "multiselect",
+    "multi-select",
+    "react-native"
+  ],
+  "author": "Mustapha Babatunde Oluwaleke - Modified by Chris O'Kelly for Divvito",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/divvito/react-native-multiple-select/issues"
   },
   "homepage": "https://github.com/divvito/react-native-multiple-select#readme",
-  "dependencies": {},
+  "dependencies": {
+    "escape-string-regexp": "^1.0.5",
+    "lodash": "^4.17.5",
+    "react": "^16.2.0",
+    "react-native": "^0.54.2",
+    "react-native-vector-icons": "^4.5.0"
+  },
   "devDependencies": {
+    "@types/escape-string-regexp": "^0.0.32",
+    "@types/lodash": "^4.14.104",
+    "@types/react": "^16.0.40",
+    "@types/react-native": "^0.52.18",
+    "@types/react-native-vector-icons": "^4.4.3",
     "babel-eslint": "^7.1.1",
     "babel-jest": "^18.0.0",
     "babel-preset-react-native": "^1.9.1",
@@ -47,7 +65,6 @@
   },
   "peerDependencies": {
     "lodash": "^4.17.4",
-    "prop-types": "^15.5.10",
     "react": "16.0.0-alpha.6",
     "react-native": "^0.50.4",
     "react-native-vector-icons": "^4.1.1"

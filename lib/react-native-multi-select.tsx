@@ -1,56 +1,73 @@
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {
-  Text,
-  View,
-  TextInput,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
   FlatList,
-  UIManager,
+  ListRenderItemInfo,
+  StyleProp,
+  Text,
+  TextInput,
+  TextStyle,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  ViewStyle
 } from 'react-native';
-import PropTypes from 'prop-types';
-import reject from 'lodash/reject';
-import find from 'lodash/find';
-import get from 'lodash/get';
+import {find, get, reject} from 'lodash';
+import * as escapeStringRegexp from 'escape-string-regexp';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import styles, {colorPack} from './styles';
 
-import styles, { colorPack } from './styles';
+type BaseItem = {
+  disabled?: boolean,
+  [s: string]: any,
+  [n: number]: any
+}
 
-export default class MultiSelect extends React.PureComponent {
-  static propTypes = {
-    single: PropTypes.bool,
-    selectedItems: PropTypes.array,
-    items: PropTypes.array.isRequired,
-    uniqueKey: PropTypes.string,
-    tagBorderColor: PropTypes.string,
-    tagTextColor: PropTypes.string,
-    fontFamily: PropTypes.string,
-    tagRemoveIconColor: PropTypes.string,
-    onSelectedItemsChange: PropTypes.func.isRequired,
-    selectedItemFontFamily: PropTypes.string,
-    selectedItemTextColor: PropTypes.string,
-    itemFontFamily: PropTypes.string,
-    itemTextColor: PropTypes.string,
-    itemFontSize: PropTypes.number,
-    selectedItemIconColor: PropTypes.string,
-    searchInputPlaceholderText: PropTypes.string,
-    searchInputStyle: PropTypes.object,
-    selectText: PropTypes.string,
-    altFontFamily: PropTypes.string,
-    hideSubmitButton: PropTypes.bool,
-    submitButtonColor: PropTypes.string,
-    submitButtonText: PropTypes.string,
-    textColor: PropTypes.string,
-    fontSize: PropTypes.number,
-    fixedHeight: PropTypes.bool,
-    hideTags: PropTypes.bool,
-    canAddItems: PropTypes.bool,
-    onAddItem: PropTypes.func,
-    onChangeInput: PropTypes.func,
-    displayKey: PropTypes.string,
-  };
+type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
+  selectedItems: (I[U])[],
+  uniqueKey: U,
+  items: I[],
+  single?: boolean,
+  tagBorderColor?: string,
+  tagTextColor?: string,
+  fontFamily?: string,
+  tagRemoveIconColor?: string,
+  onSelectedItemsChange?: (selectedItems: (I[U])[]) => void,
+  selectedItemFontFamily?: string,
+  selectedItemTextColor?: string,
+  itemFontFamily?: string,
+  itemTextColor?: string,
+  itemFontSize?: number,
+  selectedItemIconColor?: string,
+  searchInputPlaceholderText?: string,
+  searchInputStyle?: StyleProp<TextStyle>,
+  selectText?: string,
+  altFontFamily?: string,
+  hideSubmitButton?: boolean,
+  submitButtonColor?: string,
+  submitButtonText?: string,
+  textColor?: string,
+  fontSize?: number,
+  fixedHeight?: boolean,
+  hideTags?: boolean,
+  canAddItems?: boolean,
+  onAddItem?: (items: I[]) => void,
+  onChangeInput?: (value: string) => void,
+  displayKey?: D,
+}
 
-  static defaultProps = {
+type DefaultItem = {
+  name: string,
+  _id: string
+}
+
+type State = {
+  selector: boolean,
+  searchTerm: string
+}
+
+export default class MultiSelect<I extends BaseItem, U extends keyof I, D extends keyof I> extends React.PureComponent<Props<I, U, D>, State> {
+  static defaultProps: Partial<Props<DefaultItem, '_id', 'name'>> = {
     single: false,
     selectedItems: [],
     items: [],
@@ -59,7 +76,8 @@ export default class MultiSelect extends React.PureComponent {
     tagTextColor: colorPack.primary,
     fontFamily: '',
     tagRemoveIconColor: colorPack.danger,
-    onSelectedItemsChange: () => {},
+    onSelectedItemsChange: () => {
+    },
     selectedItemFontFamily: '',
     selectedItemTextColor: colorPack.primary,
     itemFontFamily: '',
@@ -67,7 +85,7 @@ export default class MultiSelect extends React.PureComponent {
     itemFontSize: 16,
     selectedItemIconColor: colorPack.primary,
     searchInputPlaceholderText: 'Search',
-    searchInputStyle: { color: colorPack.textPrimary },
+    searchInputStyle: {color: colorPack.textPrimary},
     textColor: colorPack.textPrimary,
     selectText: 'Select',
     altFontFamily: '',
@@ -77,13 +95,16 @@ export default class MultiSelect extends React.PureComponent {
     fontSize: 14,
     fixedHeight: false,
     hideTags: false,
-    onChangeInput: () => {},
+    onChangeInput: () => {
+    },
     displayKey: 'name',
     canAddItems: false,
-    onAddItem: () => {},
+    onAddItem: () => {
+    },
   };
+  static SEARCH_SPLIT_REGEXP: RegExp = /[ \-:]+/;
 
-  constructor(props) {
+  constructor(props: Props<I, U, D>) {
     super(props);
     this.state = {
       selector: false,
@@ -91,53 +112,48 @@ export default class MultiSelect extends React.PureComponent {
     };
   }
 
-  shouldComponentUpdate() {
-    // console.log('Component Updating: ', nextProps.selectedItems);
-    return true;
-  }
-
-  getSelectedItemsExt = optionalSelctedItems => (
-    <View
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-      }}
-    >
-      {this._displaySelectedItems(optionalSelctedItems)}
+  getSelectedItemsExt = (optionalSelectedItems?: (I[U])[]): ReactNode => (
+    <View style={styles.selectedItemsExt}>
+      {this._displaySelectedItems(optionalSelectedItems)}
     </View>
   );
 
-  _onChangeInput = (value) => {
-    const { onChangeInput } = this.props;
+  _onChangeInput = (value: string) => {
+    const {onChangeInput} = this.props;
+
     if (onChangeInput) {
       onChangeInput(value);
     }
-    this.setState({ searchTerm: value });
+
+    this.setState({searchTerm: value});
   };
 
-  _getSelectLabel = () => {
+  _getSelectLabel = (): string => {
     const {
       selectText,
       single,
       selectedItems,
       displayKey,
     } = this.props;
+
     if (!selectedItems || selectedItems.length === 0) {
-      return selectText;
+      return selectText!;
     } else if (single) {
-      const item = selectedItems[0];
-      const foundItem = this._findItem(item);
-      return get(foundItem, displayKey) || selectText;
+      const item: I[U] = selectedItems[0];
+      const foundItem: I | undefined = this._findItem(item);
+      return get(foundItem, displayKey!) || selectText;
     }
+
     return `${selectText} (${selectedItems.length} selected)`;
   };
 
-  _findItem = (itemKey) => {
-    const { items, uniqueKey } = this.props;
-    return find(items, singleItem => singleItem[uniqueKey] === itemKey) || {};
+  _findItem = (itemKey: I[U]): I | undefined => {
+    const {items, uniqueKey} = this.props;
+
+    return find(items, (singleItem: I) => singleItem[uniqueKey] === itemKey);
   };
 
-  _displaySelectedItems = (optionalSelctedItems) => {
+  _displaySelectedItems = (optionalSelectedItems?: (I[U])[]): ReactNode => {
     const {
       fontFamily,
       tagRemoveIconColor,
@@ -147,35 +163,44 @@ export default class MultiSelect extends React.PureComponent {
       selectedItems,
       displayKey,
     } = this.props;
-    const actualSelectedItems = optionalSelctedItems || selectedItems;
-    return actualSelectedItems.map((singleSelectedItem) => {
-      const item = this._findItem(singleSelectedItem);
-      if (!item[displayKey]) return null;
+
+    const actualSelectedItems: (I[U])[] = optionalSelectedItems || selectedItems;
+
+    return actualSelectedItems.map((singleSelectedItem: I[U]) => {
+      const item: I | undefined = this._findItem(singleSelectedItem);
+      if (!item) {
+        return null;
+      }
+      if (!item[displayKey!]) {
+        return null;
+      }
+
+      const display: string = item[displayKey!];
+      const unique: string | number = item[uniqueKey];
+
       return (
         <View
           style={[
             styles.selectedItem,
+            styles.selectedItemExt,
             {
-              width: (item[displayKey].length * 8) + 60,
-              justifyContent: 'center',
-              height: 40,
+              width: ((display).length * 8) + 60,
               borderColor: tagBorderColor,
             },
           ]}
-          key={item[uniqueKey]}
+          key={unique}
         >
           <Text
             style={[
+              styles.selectedItemExtText,
               {
-                flex: 1,
                 color: tagTextColor,
-                fontSize: 15,
+                ...(fontFamily ? {fontFamily} : {})
               },
-              fontFamily ? { fontFamily } : {},
             ]}
             numberOfLines={1}
           >
-            {item[displayKey]}
+            {display}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -184,11 +209,12 @@ export default class MultiSelect extends React.PureComponent {
           >
             <Icon
               name="cancel"
-              style={{
-                color: tagRemoveIconColor,
-                fontSize: 22,
-                marginLeft: 10,
-              }}
+              style={[
+                styles.selectedItemExtIcon,
+                {
+                  color: tagRemoveIconColor,
+                }
+              ]}
             />
           </TouchableOpacity>
         </View>
@@ -196,96 +222,117 @@ export default class MultiSelect extends React.PureComponent {
     });
   };
 
-  _removeItem = (item) => {
-    const { uniqueKey, selectedItems, onSelectedItemsChange } = this.props;
-    const newItems = reject(
-      selectedItems,
-      singleItem => item[uniqueKey] === singleItem,
-    );
-    // broadcast new selected items state to parent component
-    onSelectedItemsChange(newItems);
+  _removeItem = (item: I): void => {
+    const {uniqueKey, selectedItems, onSelectedItemsChange} = this.props;
+
+    if (onSelectedItemsChange) {
+      const newItems: (I[U])[] = reject(
+        selectedItems,
+        (singleItem: I[U]) => item[uniqueKey] === singleItem,
+      );
+      // broadcast new selected items state to parent component
+      onSelectedItemsChange(newItems);
+    }
   };
 
-  _removeAllItems = () => {
-    const { onSelectedItemsChange } = this.props;
-    // broadcast new selected items state to parent component
-    onSelectedItemsChange([]);
+  _removeAllItems = (): void => {
+    const {onSelectedItemsChange} = this.props;
+
+    if (onSelectedItemsChange) {
+      // broadcast new selected items state to parent component
+      onSelectedItemsChange([]);
+    }
   };
 
-  _toggleSelector = () => {
+  _toggleSelector = (): void => {
     this.setState({
       selector: !this.state.selector,
     });
   };
 
-  _clearSearchTerm = () => {
+  _clearSearchTerm = (): void => {
     this.setState({
       searchTerm: '',
     });
   };
 
-  _submitSelection = () => {
+  _submitSelection = (): void => {
     this._toggleSelector();
     // reset searchTerm
     this._clearSearchTerm();
   };
 
-  _itemSelected = (item) => { 
-    const { uniqueKey, selectedItems } = this.props; 
+  _itemSelected = (item: I): boolean => {
+    const {uniqueKey, selectedItems} = this.props;
+
     return selectedItems.indexOf(item[uniqueKey]) !== -1;
   };
 
-  _addItem = () => {
+  _addItem = (): void => {
     const {
       uniqueKey,
+      displayKey,
       items,
       selectedItems,
       onSelectedItemsChange,
       onAddItem,
     } = this.props;
-    let newItems = [];
-    let newSelectedItems = [];
-    const newItemName = this.state.searchTerm;
-    if (newItemName) {
-      const newItemId = newItemName
+    const {searchTerm} = this.state;
+
+    if (searchTerm) {
+      const newItemId: string = searchTerm
         .split(' ')
         .filter(word => word.length)
         .join('-');
-      newItems = [...items, { [uniqueKey]: newItemId, name: newItemName }];
-      newSelectedItems = [...selectedItems, newItemId];
-      onAddItem(newItems);
-      onSelectedItemsChange(newSelectedItems);
+      const newItem: I = {
+        [uniqueKey]: newItemId,
+        [displayKey!]: searchTerm
+      } as any as I;
+
+      if (onAddItem) {
+        onAddItem([...items, newItem]);
+      }
+      if (onSelectedItemsChange) {
+        onSelectedItemsChange([...selectedItems, newItem[uniqueKey]]);
+      }
+
       this._clearSearchTerm();
     }
   };
 
-  _toggleItem = (item) => {
+  _toggleItem = (item: I): void => {
     const {
       single,
       uniqueKey,
       selectedItems,
       onSelectedItemsChange,
     } = this.props;
+
     if (single) {
       this._submitSelection();
-      onSelectedItemsChange([item[uniqueKey]]);
+      if (onSelectedItemsChange) {
+        onSelectedItemsChange([item[uniqueKey]]);
+      }
     } else {
-      const status = this._itemSelected(item);
-      let newItems = [];
+      const status: boolean = this._itemSelected(item);
+      let newItems: (I[U])[] = [];
       if (status) {
         newItems = reject(
           selectedItems,
-          singleItem => item[uniqueKey] === singleItem,
+          (singleItem: I[U]) => item[uniqueKey] === singleItem,
         );
       } else {
         newItems = [...selectedItems, item[uniqueKey]];
       }
+
       // broadcast new selected items state to parent component
-      onSelectedItemsChange(newItems);
+      if (onSelectedItemsChange) {
+        onSelectedItemsChange(newItems);
+      }
     }
   };
 
-  _itemStyle = (item) => {
+  _itemStyle = (item: I): StyleProp<TextStyle> => {
     const {
       selectedItemFontFamily,
       selectedItemTextColor,
@@ -293,54 +340,52 @@ export default class MultiSelect extends React.PureComponent {
       itemTextColor,
       itemFontSize,
     } = this.props;
-    const isSelected = this._itemSelected(item);
-    const fontFamily = {};
+    const isSelected: boolean = this._itemSelected(item);
+    const style: StyleProp<TextStyle> = {fontSize: itemFontSize};
+
     if (isSelected && selectedItemFontFamily) {
-      fontFamily.fontFamily = selectedItemFontFamily;
+      style.fontFamily = selectedItemFontFamily;
     } else if (!isSelected && itemFontFamily) {
-      fontFamily.fontFamily = itemFontFamily;
+      style.fontFamily = itemFontFamily;
     }
-    const color = isSelected
-      ? { color: selectedItemTextColor }
-      : { color: itemTextColor };
-    return {
-      ...fontFamily,
-      ...color,
-      fontSize: itemFontSize,
-    };
+
+    if (isSelected) {
+      style.color = selectedItemTextColor;
+    } else if (item.disabled) {
+      style.color = 'grey';
+    } else {
+      style.color = itemTextColor;
+    }
+
+    return style;
   };
 
-  _getRow = (item) => {
-    const { selectedItemIconColor, displayKey } = this.props;
+  _getRow = (item: I): React.ReactElement<TouchableOpacity> => {
+    const {selectedItemIconColor, displayKey} = this.props;
+
     return (
       <TouchableOpacity
         disabled={item.disabled}
         onPress={() => this._toggleItem(item)}
-        style={{ paddingLeft: 20, paddingRight: 20 }}
+        style={styles.rowTouchableOpacity}
       >
         <View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={styles.itemContainer}>
             <Text
               style={[
-                {
-                  flex: 1,
-                  fontSize: 16,
-                  paddingTop: 5,
-                  paddingBottom: 5,
-                },
+                styles.itemText,
                 this._itemStyle(item),
-                item.disabled ? { color: 'grey' } : {},
               ]}
             >
-              {item[displayKey]}
+              {item[displayKey!]}
             </Text>
             {this._itemSelected(item) ? (
               <Icon
                 name="check"
-                style={{
-                  fontSize: 20,
-                  color: selectedItemIconColor,
-                }}
+                style={[
+                  styles.itemCheckIcon,
+                  {color: selectedItemIconColor}
+                ]}
               />
             ) : null}
           </View>
@@ -349,85 +394,74 @@ export default class MultiSelect extends React.PureComponent {
     );
   };
 
-  _getRowNew = item => (
-    <TouchableOpacity
-      disabled={item.disabled}
-      onPress={() => this._addItem(item)}
-      style={{ paddingLeft: 20, paddingRight: 20 }}
-    >
-      <View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text
-            style={[
-              {
-                flex: 1,
-                fontSize: 16,
-                paddingTop: 5,
-                paddingBottom: 5,
-              },
-              this._itemStyle(item),
-              item.disabled ? { color: 'grey' } : {},
-            ]}
-          >
-            Add {item.name} (tap or press return)
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  _getRowNew = (item: I) => {
+    const {displayKey} = this.props;
 
-  _filterItems = (searchTerm) => {
-    const { items, displayKey } = this.props;
-    const filteredItems = [];
-    items.forEach((item) => {
-      const parts = searchTerm.trim().split(/[ \-:]+/);
-      const regex = new RegExp(`(${parts.join('|')})`, 'ig');
-      if (regex.test(get(item, displayKey))) {
-        filteredItems.push(item);
-      }
-    });
-    return filteredItems;
+    return (
+      <TouchableOpacity
+        disabled={item.disabled}
+        onPress={this._addItem}
+        style={styles.rowTouchableOpacity}
+      >
+        <View>
+          <View style={styles.itemContainer}>
+            <Text
+              style={[
+                styles.itemText,
+                this._itemStyle(item),
+              ]}
+            >
+              Add {item[displayKey!]} (tap or press return)
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    )
   };
 
-  _renderItems = () => {
+  _filterItems = (searchTerm: string): I[] => {
+    const {items, displayKey} = this.props;
+    const parts: string[] = searchTerm.trim().split(MultiSelect.SEARCH_SPLIT_REGEXP).map(escapeStringRegexp);
+    const regex: RegExp = new RegExp(parts.join('|'), 'i');
+
+    return items.filter((item: I) => regex.test(get(item, displayKey!)));
+  };
+
+  _renderItems = (): ReactNode => {
     const {
       canAddItems,
       items,
       fontFamily,
       uniqueKey,
       selectedItems,
+      displayKey
     } = this.props;
-    const { searchTerm } = this.state;
-    let component = null;
+    const {searchTerm} = this.state;
     // If searchTerm matches an item in the list, we should not add a new
     // element to the list.
-    let searchTermMatch;
-    let itemList;
-    let addItemRow;
-    const renderItems = searchTerm ? this._filterItems(searchTerm) : items;
+    let searchTermMatch: boolean = false;
+    let itemList: ReactNode = null;
+    let addItemRow: ReactNode = null;
+    const renderItems: I[] = searchTerm ? this._filterItems(searchTerm) : items;
+
     if (renderItems.length) {
       itemList = (
         <FlatList
           data={renderItems}
           extraData={selectedItems}
-          keyExtractor={item => item[uniqueKey]}
-          renderItem={rowData => this._getRow(rowData.item)}
+          keyExtractor={(item: I) => item[uniqueKey!]}
+          renderItem={(rowData: ListRenderItemInfo<I>) => this._getRow(rowData.item)}
         />
       );
-      searchTermMatch = renderItems.filter(item => item.name === searchTerm)
-        .length;
+
+      searchTermMatch = renderItems.some(item => item.name === searchTerm);
     } else if (!canAddItems) {
       itemList = (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={styles.itemContainer}>
           <Text
             style={[
-              {
-                flex: 1,
-                marginTop: 20,
-                textAlign: 'center',
-                color: colorPack.danger,
-              },
-              fontFamily ? { fontFamily } : {},
+              styles.noItemsText,
+              fontFamily ? {fontFamily} : {},
             ]}
           >
             No item to display.
@@ -437,157 +471,178 @@ export default class MultiSelect extends React.PureComponent {
     }
 
     if (canAddItems && !searchTermMatch && searchTerm.length) {
-      addItemRow = this._getRowNew({ name: searchTerm });
+      addItemRow = this._getRowNew({[displayKey!]: searchTerm} as any as I);
     }
-    component = (
+
+    return (
       <View>
         {itemList}
         {addItemRow}
       </View>
     );
-    return component;
   };
 
-  render() {
+  _selectorViewStyle(): StyleProp<ViewStyle> {
+    const {fixedHeight} = this.props;
+    const style: StyleProp<ViewStyle> = [styles.selectorView];
+
+    if (fixedHeight) {
+      style.push(styles.selectorViewFixedHeight);
+    }
+
+    return style;
+  }
+
+  _renderOpen(): ReactNode {
+    const {
+      single,
+      searchInputPlaceholderText,
+      searchInputStyle,
+      hideSubmitButton,
+    } = this.props;
+    const {searchTerm} = this.state;
+
+    return (
+      <View style={this._selectorViewStyle()}>
+        <View style={styles.inputGroup}>
+          <Icon
+            name="magnify"
+            size={20}
+            color={colorPack.placeholderTextColor}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            autoFocus
+            onChangeText={this._onChangeInput}
+            blurOnSubmit={false}
+            onSubmitEditing={this._addItem}
+            placeholder={searchInputPlaceholderText}
+            placeholderTextColor={colorPack.placeholderTextColor}
+            underlineColorAndroid="transparent"
+            style={[searchInputStyle, styles.searchInput]}
+            value={searchTerm}
+          />
+          {hideSubmitButton && this._renderIndicatorOpen()}
+        </View>
+        <View style={styles.itemsWrapper}>
+          <View>{this._renderItems()}</View>
+          {!(single || hideSubmitButton) && this._renderSubmitButton()}
+        </View>
+      </View>
+    );
+  }
+
+  _renderIndicatorOpen(): ReactNode {
+    return (
+      <TouchableOpacity onPress={this._submitSelection}>
+        <Icon
+          name="menu-down"
+          style={[
+            styles.indicator,
+            styles.indicatorOpen,
+          ]}
+        />
+      </TouchableOpacity>
+    );
+  }
+
+  _renderSubmitButton(): ReactNode {
+    const {
+      fontFamily,
+      submitButtonColor,
+      submitButtonText,
+    } = this.props;
+
+    return (
+      <TouchableOpacity
+        onPress={() => this._submitSelection()}
+        style={[
+          styles.button,
+          {backgroundColor: submitButtonColor},
+        ]}
+      >
+        <Text
+          style={[
+            styles.buttonText,
+            fontFamily ? {fontFamily} : {},
+          ]}
+        >
+          {submitButtonText}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
+
+  _renderClosed(): ReactNode {
     const {
       selectedItems,
       single,
       fontFamily,
       altFontFamily,
-      searchInputPlaceholderText,
-      searchInputStyle,
       hideSubmitButton,
-      submitButtonColor,
-      submitButtonText,
       fontSize,
       textColor,
-      fixedHeight,
       hideTags,
     } = this.props;
-    const { searchTerm, selector } = this.state;
+
+    const inputFontFamily: string | undefined = altFontFamily || fontFamily;
+
+    return (
+      <View>
+        <View style={styles.dropdownView}>
+          <View
+            style={[
+              styles.subSection
+            ]}
+          >
+            <TouchableWithoutFeedback onPress={this._toggleSelector}>
+              <View style={styles.closedInputWrapper}>
+                <Text
+                  style={[
+                    styles.searchInput,
+                    {
+                      fontSize: fontSize || 16,
+                      color: textColor || colorPack.placeholderTextColor,
+                      ...(inputFontFamily ? {fontFamily: inputFontFamily} : {})
+                    }
+                  ]}
+                  numberOfLines={1}
+                >
+                  {this._getSelectLabel()}
+                </Text>
+                <Icon
+                  name={
+                    hideSubmitButton
+                      ? 'menu-right'
+                      : 'menu-down'
+                  }
+                  style={styles.indicator}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </View>
+        {!(single || hideTags) && selectedItems.length ? this._renderSelectedItems() : null}
+      </View>
+    );
+  }
+
+  _renderSelectedItems(): ReactNode {
     return (
       <View
-        style={{
-          flexDirection: 'column',
-          marginBottom: 10,
-        }}
+        style={styles.selectedItems}
       >
-        {selector ? (
-          <View style={styles.selectorView(fixedHeight)}>
-            <View style={styles.inputGroup}>
-              <Icon
-                name="magnify"
-                size={20}
-                color={colorPack.placeholderTextColor}
-                style={{ marginRight: 10 }}
-              />
-              <TextInput
-                autoFocus
-                onChangeText={this._onChangeInput}
-                blurOnSubmit={false}
-                onSubmitEditing={this._addItem}
-                placeholder={searchInputPlaceholderText}
-                placeholderTextColor={colorPack.placeholderTextColor}
-                underlineColorAndroid="transparent"
-                style={[searchInputStyle, { flex: 1 }]}
-                value={searchTerm}
-              />
-              {hideSubmitButton && (
-                <TouchableOpacity onPress={this._submitSelection}>
-                  <Icon
-                    name="menu-down"
-                    style={[
-                      styles.indicator,
-                      { paddingLeft: 15, paddingRight: 15 },
-                    ]}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-            <View
-              style={{
-                flexDirection: 'column',
-                backgroundColor: '#fafafa',
-              }}
-            >
-              <View>{this._renderItems()}</View>
-              {!single &&
-                !hideSubmitButton && (
-                  <TouchableOpacity
-                    onPress={() => this._submitSelection()}
-                    style={[
-                      styles.button,
-                      { backgroundColor: submitButtonColor },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.buttonText,
-                        fontFamily ? { fontFamily } : {},
-                      ]}
-                    >
-                      {submitButtonText}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-            </View>
-          </View>
-        ) : (
-          <View>
-            <View style={styles.dropdownView}>
-              <View
-                style={[
-                  styles.subSection,
-                  { paddingTop: 10, paddingBottom: 10 },
-                ]}
-              >
-                <TouchableWithoutFeedback onPress={this._toggleSelector}>
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text
-                      style={[
-                        {
-                          flex: 1,
-                          fontSize: fontSize || 16,
-                          color: textColor || colorPack.placeholderTextColor,
-                        },
-                        altFontFamily
-                          ? { fontFamily: altFontFamily }
-                          : fontFamily ? { fontFamily } : {},
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {this._getSelectLabel()}
-                    </Text>
-                    <Icon
-                      name={
-                        hideSubmitButton
-                          ? 'menu-right'
-                          : 'menu-down'
-                      }
-                      style={styles.indicator}
-                    />
-                  </View>
-                </TouchableWithoutFeedback>
-              </View>
-            </View>
-            {!single && !hideTags && selectedItems.length ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {this._displaySelectedItems()}
-              </View>
-            ) : null}
-          </View>
-        )}
+        {this._displaySelectedItems()}
+      </View>
+    );
+  }
+
+  render() {
+    const {selector} = this.state;
+
+    return (
+      <View style={styles.container}>
+        {selector ? this._renderOpen() : this._renderClosed()}
       </View>
     );
   }
