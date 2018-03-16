@@ -41,6 +41,7 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
   selectedItemIconColor?: string,
   searchInputPlaceholderText?: string,
   searchInputStyle?: StyleProp<TextStyle>,
+  selectLabelStyle?: StyleProp<TextStyle>,
   selectText?: string,
   altFontFamily?: string,
   hideSubmitButton?: boolean,
@@ -54,6 +55,7 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
   onAddItem?: (items: I[]) => void,
   onChangeInput?: (value: string) => void,
   displayKey?: D,
+  getSelectLabel?: (params: {selectText?: string, single?: boolean, selectedItems?: (I[U])[], displayKey?: D}) => string
 }
 
 type DefaultItem = {
@@ -134,9 +136,12 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       single,
       selectedItems,
       displayKey,
+      getSelectLabel
     } = this.props;
 
-    if (!selectedItems || selectedItems.length === 0) {
+    if (getSelectLabel) {
+      return getSelectLabel({selectText, single, selectedItems, displayKey});
+    } else if (!selectedItems || selectedItems.length === 0) {
       return selectText!;
     } else if (single) {
       const item: I[U] = selectedItems[0];
@@ -583,6 +588,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       fontSize,
       textColor,
       hideTags,
+      selectLabelStyle
     } = this.props;
 
     const inputFontFamily: string | undefined = altFontFamily || fontFamily;
@@ -604,7 +610,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
                       fontSize: fontSize || 16,
                       color: textColor || colorPack.placeholderTextColor,
                       ...(inputFontFamily ? {fontFamily: inputFontFamily} : {})
-                    }
+                    },
+                    selectLabelStyle
                   ]}
                   numberOfLines={1}
                 >
