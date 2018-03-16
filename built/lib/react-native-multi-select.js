@@ -273,7 +273,7 @@ export default class MultiSelect extends React.PureComponent {
                 ] }, submitButtonText)));
     }
     _renderClosed() {
-        const { selectedItems, single, fontFamily, altFontFamily, hideSubmitButton, fontSize, textColor, hideTags, selectLabelStyle } = this.props;
+        const { selectedItems, single, fontFamily, altFontFamily, hideSubmitButton, fontSize, textColor, hideTags, selectLabelStyle, closedInputWrapperStyle } = this.props;
         const inputFontFamily = altFontFamily || fontFamily;
         return (React.createElement(View, null,
             React.createElement(View, { style: styles.dropdownView },
@@ -281,7 +281,7 @@ export default class MultiSelect extends React.PureComponent {
                         styles.subSection
                     ] },
                     React.createElement(TouchableWithoutFeedback, { onPress: this._toggleSelector },
-                        React.createElement(View, { style: styles.closedInputWrapper },
+                        React.createElement(View, { style: [styles.closedInputWrapper, closedInputWrapperStyle] },
                             React.createElement(Text, { style: [
                                     styles.searchInput,
                                     Object.assign({ fontSize: fontSize || 16, color: textColor || colorPack.placeholderTextColor }, (inputFontFamily ? { fontFamily: inputFontFamily } : {})),

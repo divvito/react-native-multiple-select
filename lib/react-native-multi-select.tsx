@@ -42,6 +42,7 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
   searchInputPlaceholderText?: string,
   searchInputStyle?: StyleProp<TextStyle>,
   selectLabelStyle?: StyleProp<TextStyle>,
+  closedInputWrapperStyle?: StyleProp<ViewStyle>,
   selectText?: string,
   altFontFamily?: string,
   hideSubmitButton?: boolean,
@@ -588,7 +589,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       fontSize,
       textColor,
       hideTags,
-      selectLabelStyle
+      selectLabelStyle,
+      closedInputWrapperStyle
     } = this.props;
 
     const inputFontFamily: string | undefined = altFontFamily || fontFamily;
@@ -602,7 +604,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
             ]}
           >
             <TouchableWithoutFeedback onPress={this._toggleSelector}>
-              <View style={styles.closedInputWrapper}>
+              <View style={[styles.closedInputWrapper, closedInputWrapperStyle]}>
                 <Text
                   style={[
                     styles.searchInput,
