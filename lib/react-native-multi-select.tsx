@@ -43,6 +43,29 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
   searchInputStyle?: StyleProp<TextStyle>,
   selectLabelStyle?: StyleProp<TextStyle>,
   closedInputWrapperStyle?: StyleProp<ViewStyle>,
+  dropdownViewStyle?: StyleProp<ViewStyle>,
+  selectedItemsStyle?: StyleProp<ViewStyle>,
+  containerStyle?: StyleProp<ViewStyle>,
+  indicatorStyle?: StyleProp<TextStyle>,
+  indicatorOpenStyle?: StyleProp<TextStyle>,
+  subSectionStyle?: StyleProp<ViewStyle>,
+  submitButtonStyle?: StyleProp<ViewStyle>,
+  submitButtonTextStyle?: StyleProp<TextStyle>,
+  selectorViewStyle?: StyleProp<ViewStyle>,
+  inputGroupStyle?: StyleProp<ViewStyle>,
+  searchIconStyle?: StyleProp<TextStyle>,
+  itemWrapperStyle?: StyleProp<ViewStyle>,
+  itemContainerStyle?: StyleProp<ViewStyle>,
+  noItemsTextStyle?: StyleProp<TextStyle>,
+  rowTouchableOpacityStyle?: StyleProp<ViewStyle>,
+  itemTextStyle?: StyleProp<TextStyle>,
+  itemCheckIconStyle?: StyleProp<TextStyle>,
+  selectedItemStyle?: StyleProp<ViewStyle>,
+  selectedItemsExtStyle?: StyleProp<ViewStyle>,
+  selectedItemExtStyle?: StyleProp<ViewStyle>,
+  selectedItemExtTextStyle?: StyleProp<TextStyle>,
+  selectedItemExtIconStyle?: StyleProp<TextStyle>,
+  disabledItemColor?: string,
   selectText?: string,
   altFontFamily?: string,
   hideSubmitButton?: boolean,
@@ -56,7 +79,7 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
   onAddItem?: (items: I[]) => void,
   onChangeInput?: (value: string) => void,
   displayKey?: D,
-  getSelectLabel?: (params: {selectText?: string, single?: boolean, selectedItems?: (I[U])[], displayKey?: D}) => string
+  getSelectLabel?: (params: { selectText?: string, single?: boolean, selectedItems?: (I[U])[], displayKey?: D }) => string
 }
 
 type DefaultItem = {
@@ -104,6 +127,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     canAddItems: false,
     onAddItem: () => {
     },
+    disabledItemColor: 'grey'
   };
   static SEARCH_SPLIT_REGEXP: RegExp = /[ \-:]+/;
 
@@ -115,11 +139,14 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     };
   }
 
-  getSelectedItemsExt = (optionalSelectedItems?: (I[U])[]): ReactNode => (
-    <View style={styles.selectedItemsExt}>
-      {this._displaySelectedItems(optionalSelectedItems)}
-    </View>
-  );
+  getSelectedItemsExt = (optionalSelectedItems?: (I[U])[]): ReactNode => {
+    const {selectedItemsExtStyle} = this.props;
+    return (
+      <View style={[styles.selectedItemsExt, selectedItemsExtStyle]}>
+        {this._displaySelectedItems(optionalSelectedItems)}
+      </View>
+    );
+  };
 
   _onChangeInput = (value: string) => {
     const {onChangeInput} = this.props;
@@ -168,6 +195,10 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       tagTextColor,
       selectedItems,
       displayKey,
+      selectedItemStyle,
+      selectedItemExtStyle,
+      selectedItemExtTextStyle,
+      selectedItemExtIconStyle,
     } = this.props;
 
     const actualSelectedItems: (I[U])[] = optionalSelectedItems || selectedItems;
@@ -193,6 +224,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
               width: ((display).length * 8) + 60,
               borderColor: tagBorderColor,
             },
+            selectedItemStyle,
+            selectedItemExtStyle
           ]}
           key={unique}
         >
@@ -203,6 +236,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
                 color: tagTextColor,
                 ...(fontFamily ? {fontFamily} : {})
               },
+              selectedItemExtTextStyle
             ]}
             numberOfLines={1}
           >
@@ -219,7 +253,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
                 styles.selectedItemExtIcon,
                 {
                   color: tagRemoveIconColor,
-                }
+                },
+                selectedItemExtIconStyle
               ]}
             />
           </TouchableOpacity>
@@ -345,6 +380,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       itemFontFamily,
       itemTextColor,
       itemFontSize,
+      disabledItemColor
     } = this.props;
     const isSelected: boolean = this._itemSelected(item);
     const style: StyleProp<TextStyle> = {fontSize: itemFontSize};
@@ -358,7 +394,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     if (isSelected) {
       style.color = selectedItemTextColor;
     } else if (item.disabled) {
-      style.color = 'grey';
+      style.color = disabledItemColor!;
     } else {
       style.color = itemTextColor;
     }
@@ -367,20 +403,28 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   };
 
   _getRow = (item: I): React.ReactElement<TouchableOpacity> => {
-    const {selectedItemIconColor, displayKey} = this.props;
+    const {
+      selectedItemIconColor,
+      displayKey,
+      rowTouchableOpacityStyle,
+      itemContainerStyle,
+      itemTextStyle,
+      itemCheckIconStyle
+    } = this.props;
 
     return (
       <TouchableOpacity
         disabled={item.disabled}
         onPress={() => this._toggleItem(item)}
-        style={styles.rowTouchableOpacity}
+        style={[styles.rowTouchableOpacity, rowTouchableOpacityStyle]}
       >
         <View>
-          <View style={styles.itemContainer}>
+          <View style={[styles.itemContainer, itemContainerStyle]}>
             <Text
               style={[
                 styles.itemText,
                 this._itemStyle(item),
+                itemTextStyle
               ]}
             >
               {item[displayKey!]}
@@ -390,7 +434,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
                 name="check"
                 style={[
                   styles.itemCheckIcon,
-                  {color: selectedItemIconColor}
+                  {color: selectedItemIconColor},
+                  itemCheckIconStyle
                 ]}
               />
             ) : null}
@@ -401,20 +446,21 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   };
 
   _getRowNew = (item: I) => {
-    const {displayKey} = this.props;
+    const {displayKey, rowTouchableOpacityStyle, itemContainerStyle, itemTextStyle} = this.props;
 
     return (
       <TouchableOpacity
         disabled={item.disabled}
         onPress={this._addItem}
-        style={styles.rowTouchableOpacity}
+        style={[styles.rowTouchableOpacity, rowTouchableOpacityStyle]}
       >
         <View>
-          <View style={styles.itemContainer}>
+          <View style={[styles.itemContainer, itemContainerStyle]}>
             <Text
               style={[
                 styles.itemText,
                 this._itemStyle(item),
+                itemTextStyle
               ]}
             >
               Add {item[displayKey!]} (tap or press return)
@@ -440,7 +486,9 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       fontFamily,
       uniqueKey,
       selectedItems,
-      displayKey
+      displayKey,
+      itemContainerStyle,
+      noItemsTextStyle
     } = this.props;
     const {searchTerm} = this.state;
     // If searchTerm matches an item in the list, we should not add a new
@@ -463,11 +511,12 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       searchTermMatch = renderItems.some(item => item.name === searchTerm);
     } else if (!canAddItems) {
       itemList = (
-        <View style={styles.itemContainer}>
+        <View style={[styles.itemContainer, itemContainerStyle]}>
           <Text
             style={[
               styles.noItemsText,
               fontFamily ? {fontFamily} : {},
+              noItemsTextStyle
             ]}
           >
             No item to display.
@@ -489,11 +538,15 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   };
 
   _selectorViewStyle(): StyleProp<ViewStyle> {
-    const {fixedHeight} = this.props;
+    const {fixedHeight, selectorViewStyle} = this.props;
     const style: StyleProp<ViewStyle> = [styles.selectorView];
 
     if (fixedHeight) {
       style.push(styles.selectorViewFixedHeight);
+    }
+
+    if (selectorViewStyle) {
+      style.push(selectorViewStyle);
     }
 
     return style;
@@ -505,17 +558,20 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       searchInputPlaceholderText,
       searchInputStyle,
       hideSubmitButton,
+      inputGroupStyle,
+      searchIconStyle,
+      itemWrapperStyle
     } = this.props;
     const {searchTerm} = this.state;
 
     return (
       <View style={this._selectorViewStyle()}>
-        <View style={styles.inputGroup}>
+        <View style={[styles.inputGroup, inputGroupStyle]}>
           <Icon
             name="magnify"
             size={20}
             color={colorPack.placeholderTextColor}
-            style={styles.searchIcon}
+            style={[styles.searchIcon, searchIconStyle]}
           />
           <TextInput
             autoFocus
@@ -525,12 +581,12 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
             placeholder={searchInputPlaceholderText}
             placeholderTextColor={colorPack.placeholderTextColor}
             underlineColorAndroid="transparent"
-            style={[searchInputStyle, styles.searchInput]}
+            style={[styles.searchInput, searchInputStyle]}
             value={searchTerm}
           />
           {hideSubmitButton && this._renderIndicatorOpen()}
         </View>
-        <View style={styles.itemsWrapper}>
+        <View style={[styles.itemsWrapper, itemWrapperStyle]}>
           <View>{this._renderItems()}</View>
           {!(single || hideSubmitButton) && this._renderSubmitButton()}
         </View>
@@ -539,6 +595,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   }
 
   _renderIndicatorOpen(): ReactNode {
+    const {indicatorStyle, indicatorOpenStyle} = this.props;
     return (
       <TouchableOpacity onPress={this._submitSelection}>
         <Icon
@@ -546,6 +603,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
           style={[
             styles.indicator,
             styles.indicatorOpen,
+            indicatorStyle,
+            indicatorOpenStyle,
           ]}
         />
       </TouchableOpacity>
@@ -557,6 +616,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       fontFamily,
       submitButtonColor,
       submitButtonText,
+      submitButtonStyle,
+      submitButtonTextStyle
     } = this.props;
 
     return (
@@ -565,12 +626,14 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
         style={[
           styles.button,
           {backgroundColor: submitButtonColor},
+          submitButtonStyle
         ]}
       >
         <Text
           style={[
             styles.buttonText,
             fontFamily ? {fontFamily} : {},
+            submitButtonTextStyle
           ]}
         >
           {submitButtonText}
@@ -590,17 +653,21 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       textColor,
       hideTags,
       selectLabelStyle,
-      closedInputWrapperStyle
+      closedInputWrapperStyle,
+      dropdownViewStyle,
+      indicatorStyle,
+      subSectionStyle
     } = this.props;
 
     const inputFontFamily: string | undefined = altFontFamily || fontFamily;
 
     return (
       <View>
-        <View style={styles.dropdownView}>
+        <View style={[styles.dropdownView, dropdownViewStyle]}>
           <View
             style={[
-              styles.subSection
+              styles.subSection,
+              subSectionStyle
             ]}
           >
             <TouchableWithoutFeedback onPress={this._toggleSelector}>
@@ -625,7 +692,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
                       ? 'menu-right'
                       : 'menu-down'
                   }
-                  style={styles.indicator}
+                  style={[styles.indicator, indicatorStyle]}
                 />
               </View>
             </TouchableWithoutFeedback>
@@ -637,9 +704,10 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   }
 
   _renderSelectedItems(): ReactNode {
+    const {selectedItemsStyle} = this.props;
     return (
       <View
-        style={styles.selectedItems}
+        style={[styles.selectedItems, selectedItemsStyle]}
       >
         {this._displaySelectedItems()}
       </View>
@@ -647,10 +715,11 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   }
 
   render() {
+    const {containerStyle} = this.props;
     const {selector} = this.state;
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, containerStyle]}>
         {selector ? this._renderOpen() : this._renderClosed()}
       </View>
     );
