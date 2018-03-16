@@ -16,8 +16,11 @@ export default class MultiSelect extends React.PureComponent {
             this.setState({ searchTerm: value });
         };
         this._getSelectLabel = () => {
-            const { selectText, single, selectedItems, displayKey, } = this.props;
-            if (!selectedItems || selectedItems.length === 0) {
+            const { selectText, single, selectedItems, displayKey, getSelectLabel } = this.props;
+            if (getSelectLabel) {
+                return getSelectLabel({ selectText, single, selectedItems, displayKey });
+            }
+            else if (!selectedItems || selectedItems.length === 0) {
                 return selectText;
             }
             else if (single) {
@@ -270,7 +273,7 @@ export default class MultiSelect extends React.PureComponent {
                 ] }, submitButtonText)));
     }
     _renderClosed() {
-        const { selectedItems, single, fontFamily, altFontFamily, hideSubmitButton, fontSize, textColor, hideTags, } = this.props;
+        const { selectedItems, single, fontFamily, altFontFamily, hideSubmitButton, fontSize, textColor, hideTags, selectLabelStyle } = this.props;
         const inputFontFamily = altFontFamily || fontFamily;
         return (React.createElement(View, null,
             React.createElement(View, { style: styles.dropdownView },
@@ -281,7 +284,8 @@ export default class MultiSelect extends React.PureComponent {
                         React.createElement(View, { style: styles.closedInputWrapper },
                             React.createElement(Text, { style: [
                                     styles.searchInput,
-                                    Object.assign({ fontSize: fontSize || 16, color: textColor || colorPack.placeholderTextColor }, (inputFontFamily ? { fontFamily: inputFontFamily } : {}))
+                                    Object.assign({ fontSize: fontSize || 16, color: textColor || colorPack.placeholderTextColor }, (inputFontFamily ? { fontFamily: inputFontFamily } : {})),
+                                    selectLabelStyle
                                 ], numberOfLines: 1 }, this._getSelectLabel()),
                             React.createElement(Icon, { name: hideSubmitButton
                                     ? 'menu-right'
