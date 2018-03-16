@@ -1,85 +1,88 @@
 import * as React from 'react';
-import {ReactNode} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  StyleProp,
-  Text,
-  TextInput,
-  TextStyle,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-  ViewStyle
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 import {find, get, reject} from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles, {colorPack} from './styles';
+import SelectedItems, {Props as SelectedItemsProps} from 'components/SelectedItems'
+import NoItems, {Props as NoItemsProps} from 'components/NoItems'
+import ClosedInput, {ParentProps as ClosedInputParentProps, Props as ClosedInputProps} from 'components/ClosedInput';
+import SubmitButton, {
+  ParentProps as SubmitButtonParentProps,
+  Props as SubmitButtonProps
+} from 'components/SubmitButton';
+import IndicatorOpen, {
+  ParentProps as IndicatorOpenParentProps,
+  Props as IndicatorOpenProps
+} from 'components/IndicatorOpen';
+import ItemsWrapper, {
+  ParentProps as ItemsWrapperParentProps,
+  Props as ItemsWrapperProps
+} from 'components/ItemsWrapper';
+import InputGroup, {ParentProps as InputGroupParentProps, Props as InputGroupProps} from 'components/InputGroup';
+import ItemRow, {ParentProps as ItemRowParentProps, Props as ItemRowProps} from 'components/ItemRow';
+import ItemRowNew, {ParentProps as ItemRowNewParentProps, Props as ItemRowNewProps} from 'components/ItemRowNew';
+import SelectedItem, {
+  ParentProps as SelectedItemParentProps,
+  Props as SelectedItemProps
+} from 'components/SelectedItem';
 
-type BaseItem = {
+type WithChildren<T> = T & {
+  children: React.ReactNode
+}
+
+type RenderProps<I extends BaseItem, U extends keyof I, D extends keyof I> = {
+  renderSelectedItems?: (props: WithChildren<SelectedItemsProps>) => React.ReactNode
+  renderClosedInput?: (props: ClosedInputProps) => React.ReactNode
+  renderSubmitButton?: (props: SubmitButtonProps) => React.ReactNode
+  renderIndicatorOpen?: (props: IndicatorOpenProps) => React.ReactNode
+  renderItemsWrapper?: (props: WithChildren<ItemsWrapperProps>) => React.ReactNode
+  renderInputGroup?: (props: InputGroupProps) => React.ReactNode
+  renderNoItems?: (props: NoItemsProps) => React.ReactNode
+  renderItemRow?: (props: ItemRowProps<I, D>) => React.ReactElement<ItemRowProps<I, D>>
+  renderItemRowNew?: (props: ItemRowNewProps<I>) => React.ReactNode
+  renderSelectedItem?: (props: SelectedItemProps<I, U, D>) => React.ReactNode
+}
+
+export type BaseItem = {
   disabled?: boolean,
   [s: string]: any,
   [n: number]: any
 }
 
-type Props<I extends BaseItem, U extends keyof I, D extends keyof I> = {
+type Props<I extends BaseItem, U extends keyof I, D extends keyof I> =
+  SelectedItemsProps &
+  ClosedInputParentProps &
+  SubmitButtonParentProps &
+  IndicatorOpenParentProps &
+  ItemsWrapperParentProps &
+  InputGroupParentProps &
+  NoItemsProps &
+  ItemRowParentProps<I, D> &
+  ItemRowNewParentProps<I> &
+  SelectedItemParentProps<I, U, D> &
+  RenderProps<I, U, D> & {
   selectedItems: (I[U])[],
-  uniqueKey: U,
   items: I[],
   single?: boolean,
-  tagBorderColor?: string,
-  tagTextColor?: string,
-  fontFamily?: string,
-  tagRemoveIconColor?: string,
   onSelectedItemsChange?: (selectedItems: (I[U])[]) => void,
   selectedItemFontFamily?: string,
   selectedItemTextColor?: string,
   itemFontFamily?: string,
   itemTextColor?: string,
   itemFontSize?: number,
-  selectedItemIconColor?: string,
-  searchInputPlaceholderText?: string,
-  searchInputStyle?: StyleProp<TextStyle>,
-  selectLabelStyle?: StyleProp<TextStyle>,
-  closedInputWrapperStyle?: StyleProp<ViewStyle>,
-  dropdownViewStyle?: StyleProp<ViewStyle>,
-  selectedItemsStyle?: StyleProp<ViewStyle>,
   containerStyle?: StyleProp<ViewStyle>,
-  indicatorStyle?: StyleProp<TextStyle>,
-  indicatorOpenStyle?: StyleProp<TextStyle>,
-  subSectionStyle?: StyleProp<ViewStyle>,
-  submitButtonStyle?: StyleProp<ViewStyle>,
-  submitButtonTextStyle?: StyleProp<TextStyle>,
   selectorViewStyle?: StyleProp<ViewStyle>,
-  inputGroupStyle?: StyleProp<ViewStyle>,
-  searchIconStyle?: StyleProp<TextStyle>,
-  itemWrapperStyle?: StyleProp<ViewStyle>,
-  itemContainerStyle?: StyleProp<ViewStyle>,
-  noItemsTextStyle?: StyleProp<TextStyle>,
-  rowTouchableOpacityStyle?: StyleProp<ViewStyle>,
-  itemTextStyle?: StyleProp<TextStyle>,
-  itemCheckIconStyle?: StyleProp<TextStyle>,
-  selectedItemStyle?: StyleProp<ViewStyle>,
   selectedItemsExtStyle?: StyleProp<ViewStyle>,
-  selectedItemExtStyle?: StyleProp<ViewStyle>,
-  selectedItemExtTextStyle?: StyleProp<TextStyle>,
-  selectedItemExtIconStyle?: StyleProp<TextStyle>,
   disabledItemColor?: string,
   selectText?: string,
   altFontFamily?: string,
-  hideSubmitButton?: boolean,
-  submitButtonColor?: string,
-  submitButtonText?: string,
-  textColor?: string,
-  fontSize?: number,
   fixedHeight?: boolean,
   hideTags?: boolean,
   canAddItems?: boolean,
   onAddItem?: (items: I[]) => void,
   onChangeInput?: (value: string) => void,
-  displayKey?: D,
   getSelectLabel?: (params: { selectText?: string, single?: boolean, selectedItems?: (I[U])[], displayKey?: D }) => string
+  getNewItemLabel?: (name: string) => string
 }
 
 type DefaultItem = {
@@ -127,7 +130,9 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     canAddItems: false,
     onAddItem: () => {
     },
-    disabledItemColor: 'grey'
+    disabledItemColor: 'grey',
+    noItemsText: 'No item to display.',
+    getNewItemLabel: (name: string) => `Add ${name} (tap or press return)`,
   };
   static SEARCH_SPLIT_REGEXP: RegExp = /[ \-:]+/;
 
@@ -139,7 +144,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     };
   }
 
-  getSelectedItemsExt = (optionalSelectedItems?: (I[U])[]): ReactNode => {
+  getSelectedItemsExt = (optionalSelectedItems?: (I[U])[]): React.ReactNode => {
     const {selectedItemsExtStyle} = this.props;
     return (
       <View style={[styles.selectedItemsExt, selectedItemsExtStyle]}>
@@ -148,7 +153,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     );
   };
 
-  _onChangeInput = (value: string) => {
+  _onChangeInput = (value: string): void => {
     const {onChangeInput} = this.props;
 
     if (onChangeInput) {
@@ -186,19 +191,10 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     return find(items, (singleItem: I) => singleItem[uniqueKey] === itemKey);
   };
 
-  _displaySelectedItems = (optionalSelectedItems?: (I[U])[]): ReactNode => {
+  _displaySelectedItems = (optionalSelectedItems?: (I[U])[]): React.ReactNode => {
     const {
-      fontFamily,
-      tagRemoveIconColor,
-      tagBorderColor,
-      uniqueKey,
-      tagTextColor,
       selectedItems,
       displayKey,
-      selectedItemStyle,
-      selectedItemExtStyle,
-      selectedItemExtTextStyle,
-      selectedItemExtIconStyle,
     } = this.props;
 
     const actualSelectedItems: (I[U])[] = optionalSelectedItems || selectedItems;
@@ -212,54 +208,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
         return null;
       }
 
-      const display: string = item[displayKey!];
-      const unique: string | number = item[uniqueKey];
-
-      return (
-        <View
-          style={[
-            styles.selectedItem,
-            styles.selectedItemExt,
-            {
-              width: ((display).length * 8) + 60,
-              borderColor: tagBorderColor,
-            },
-            selectedItemStyle,
-            selectedItemExtStyle
-          ]}
-          key={unique}
-        >
-          <Text
-            style={[
-              styles.selectedItemExtText,
-              {
-                color: tagTextColor,
-                ...(fontFamily ? {fontFamily} : {})
-              },
-              selectedItemExtTextStyle
-            ]}
-            numberOfLines={1}
-          >
-            {display}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              this._removeItem(item);
-            }}
-          >
-            <Icon
-              name="cancel"
-              style={[
-                styles.selectedItemExtIcon,
-                {
-                  color: tagRemoveIconColor,
-                },
-                selectedItemExtIconStyle
-              ]}
-            />
-          </TouchableOpacity>
-        </View>
-      );
+      return this._renderSelectedItem(item);
     });
   };
 
@@ -402,139 +351,12 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     return style;
   };
 
-  _getRow = (item: I): React.ReactElement<TouchableOpacity> => {
-    const {
-      selectedItemIconColor,
-      displayKey,
-      rowTouchableOpacityStyle,
-      itemContainerStyle,
-      itemTextStyle,
-      itemCheckIconStyle
-    } = this.props;
-
-    return (
-      <TouchableOpacity
-        disabled={item.disabled}
-        onPress={() => this._toggleItem(item)}
-        style={[styles.rowTouchableOpacity, rowTouchableOpacityStyle]}
-      >
-        <View>
-          <View style={[styles.itemContainer, itemContainerStyle]}>
-            <Text
-              style={[
-                styles.itemText,
-                this._itemStyle(item),
-                itemTextStyle
-              ]}
-            >
-              {item[displayKey!]}
-            </Text>
-            {this._itemSelected(item) ? (
-              <Icon
-                name="check"
-                style={[
-                  styles.itemCheckIcon,
-                  {color: selectedItemIconColor},
-                  itemCheckIconStyle
-                ]}
-              />
-            ) : null}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  _getRowNew = (item: I) => {
-    const {displayKey, rowTouchableOpacityStyle, itemContainerStyle, itemTextStyle} = this.props;
-
-    return (
-      <TouchableOpacity
-        disabled={item.disabled}
-        onPress={this._addItem}
-        style={[styles.rowTouchableOpacity, rowTouchableOpacityStyle]}
-      >
-        <View>
-          <View style={[styles.itemContainer, itemContainerStyle]}>
-            <Text
-              style={[
-                styles.itemText,
-                this._itemStyle(item),
-                itemTextStyle
-              ]}
-            >
-              Add {item[displayKey!]} (tap or press return)
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    )
-  };
-
   _filterItems = (searchTerm: string): I[] => {
     const {items, displayKey} = this.props;
     const parts: string[] = searchTerm.trim().split(MultiSelect.SEARCH_SPLIT_REGEXP).map(escapeStringRegexp);
     const regex: RegExp = new RegExp(parts.join('|'), 'i');
 
     return items.filter((item: I) => regex.test(get(item, displayKey!)));
-  };
-
-  _renderItems = (): ReactNode => {
-    const {
-      canAddItems,
-      items,
-      fontFamily,
-      uniqueKey,
-      selectedItems,
-      displayKey,
-      itemContainerStyle,
-      noItemsTextStyle
-    } = this.props;
-    const {searchTerm} = this.state;
-    // If searchTerm matches an item in the list, we should not add a new
-    // element to the list.
-    let searchTermMatch: boolean = false;
-    let itemList: ReactNode = null;
-    let addItemRow: ReactNode = null;
-    const renderItems: I[] = searchTerm ? this._filterItems(searchTerm) : items;
-
-    if (renderItems.length) {
-      itemList = (
-        <FlatList
-          data={renderItems}
-          extraData={selectedItems}
-          keyExtractor={(item: I) => item[uniqueKey!]}
-          renderItem={(rowData: ListRenderItemInfo<I>) => this._getRow(rowData.item)}
-        />
-      );
-
-      searchTermMatch = renderItems.some(item => item.name === searchTerm);
-    } else if (!canAddItems) {
-      itemList = (
-        <View style={[styles.itemContainer, itemContainerStyle]}>
-          <Text
-            style={[
-              styles.noItemsText,
-              fontFamily ? {fontFamily} : {},
-              noItemsTextStyle
-            ]}
-          >
-            No item to display.
-          </Text>
-        </View>
-      );
-    }
-
-    if (canAddItems && !searchTermMatch && searchTerm.length) {
-      addItemRow = this._getRowNew({[displayKey!]: searchTerm} as any as I);
-    }
-
-    return (
-      <View>
-        {itemList}
-        {addItemRow}
-      </View>
-    );
   };
 
   _selectorViewStyle(): StyleProp<ViewStyle> {
@@ -552,166 +374,323 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     return style;
   }
 
-  _renderOpen(): ReactNode {
+  _renderItems = (): React.ReactNode => {
     const {
-      single,
-      searchInputPlaceholderText,
-      searchInputStyle,
-      hideSubmitButton,
-      inputGroupStyle,
-      searchIconStyle,
-      itemWrapperStyle
+      canAddItems,
+      items,
+      uniqueKey,
+      selectedItems,
+      displayKey,
     } = this.props;
     const {searchTerm} = this.state;
+    // If searchTerm matches an item in the list, we should not add a new
+    // element to the list.
+    let searchTermMatch: boolean = false;
+    let itemList: React.ReactNode = null;
+    let addItemRow: React.ReactNode = null;
+    const renderItems: I[] = searchTerm ? this._filterItems(searchTerm) : items;
+
+    if (renderItems.length) {
+      itemList = (
+        <FlatList
+          data={renderItems}
+          extraData={selectedItems}
+          keyExtractor={(item: I) => item[uniqueKey!]}
+          renderItem={(rowData: ListRenderItemInfo<I>) => this._renderItemRow(rowData.item)}
+        />
+      );
+
+      searchTermMatch = renderItems.some(item => item.name === searchTerm);
+    } else if (!canAddItems) {
+      itemList = this._renderNoItems();
+    }
+
+    if (canAddItems && !searchTermMatch && searchTerm.length) {
+      addItemRow = this._renderRowNew({[displayKey!]: searchTerm} as any as I);
+    }
 
     return (
+      <View>
+        {itemList}
+        {addItemRow}
+      </View>
+    );
+  };
+
+  _renderRowNew = (item: I): React.ReactNode => {
+    const {
+      displayKey,
+      rowTouchableOpacityStyle,
+      itemContainerStyle,
+      itemTextStyle,
+      getNewItemLabel,
+      renderItemRowNew,
+    } = this.props;
+    const props: ItemRowNewProps<I> = {
+      onAdd: this._addItem,
+      itemLabel: getNewItemLabel!(item[displayKey!]),
+      itemStyle: this._itemStyle(item),
+      item,
+      itemContainerStyle,
+      itemTextStyle,
+      rowTouchableOpacityStyle
+    };
+
+    if (renderItemRowNew) {
+      return renderItemRowNew(props);
+    } else {
+      return (<ItemRowNew {...props}/>);
+    }
+  };
+
+  _renderItemRow = (item: I): React.ReactElement<ItemRowProps<I, D>> => {
+    const {
+      selectedItemIconColor,
+      displayKey,
+      rowTouchableOpacityStyle,
+      itemContainerStyle,
+      itemTextStyle,
+      itemCheckIconStyle,
+      renderItemRow,
+    } = this.props;
+    const props: ItemRowProps<I, D> = {
+      onPress: this._toggleItem,
+      itemStyle: this._itemStyle(item),
+      selected: this._itemSelected(item),
+      item,
+      displayKey,
+      selectedItemIconColor,
+      rowTouchableOpacityStyle,
+      itemContainerStyle,
+      itemTextStyle,
+      itemCheckIconStyle,
+    };
+
+    if (renderItemRow) {
+      return renderItemRow(props);
+    } else {
+      return (<ItemRow {...props}/>);
+    }
+  };
+
+  _renderNoItems(): React.ReactNode {
+    const {
+      itemContainerStyle,
+      noItemsTextStyle,
+      fontFamily,
+      noItemsText,
+      renderNoItems
+    } = this.props;
+    const props: NoItemsProps = {
+      itemContainerStyle,
+      noItemsTextStyle,
+      fontFamily,
+      noItemsText,
+    };
+
+    if (renderNoItems) {
+      return renderNoItems(props);
+    } else {
+      return (<NoItems {...props}/>);
+    }
+  }
+
+  _renderOpen(): React.ReactNode {
+    return (
       <View style={this._selectorViewStyle()}>
-        <View style={[styles.inputGroup, inputGroupStyle]}>
-          <Icon
-            name="magnify"
-            size={20}
-            color={colorPack.placeholderTextColor}
-            style={[styles.searchIcon, searchIconStyle]}
-          />
-          <TextInput
-            autoFocus
-            onChangeText={this._onChangeInput}
-            blurOnSubmit={false}
-            onSubmitEditing={this._addItem}
-            placeholder={searchInputPlaceholderText}
-            placeholderTextColor={colorPack.placeholderTextColor}
-            underlineColorAndroid="transparent"
-            style={[styles.searchInput, searchInputStyle]}
-            value={searchTerm}
-          />
-          {hideSubmitButton && this._renderIndicatorOpen()}
-        </View>
-        <View style={[styles.itemsWrapper, itemWrapperStyle]}>
-          <View>{this._renderItems()}</View>
-          {!(single || hideSubmitButton) && this._renderSubmitButton()}
-        </View>
+        {this._renderInputGroup()}
+        {this._renderItemsWrapper()}
       </View>
     );
   }
 
-  _renderIndicatorOpen(): ReactNode {
-    const {indicatorStyle, indicatorOpenStyle} = this.props;
-    return (
-      <TouchableOpacity onPress={this._submitSelection}>
-        <Icon
-          name="menu-down"
-          style={[
-            styles.indicator,
-            styles.indicatorOpen,
-            indicatorStyle,
-            indicatorOpenStyle,
-          ]}
-        />
-      </TouchableOpacity>
-    );
+  _renderInputGroup(): React.ReactNode {
+    const {
+      hideSubmitButton,
+      inputGroupStyle,
+      searchIconStyle,
+      searchInputPlaceholderText,
+      searchInputStyle,
+      renderInputGroup,
+    } = this.props;
+    const {searchTerm} = this.state;
+    const props: InputGroupProps = {
+      indicatorOpen: hideSubmitButton ? this._renderIndicatorOpen() : null,
+      onChange: this._onChangeInput,
+      onAdd: this._addItem,
+      inputGroupStyle,
+      searchIconStyle,
+      searchInputPlaceholderText,
+      searchInputStyle,
+      searchTerm,
+    };
+
+    if (renderInputGroup) {
+      return renderInputGroup(props);
+    } else {
+      return (<InputGroup {...props}/>);
+    }
   }
 
-  _renderSubmitButton(): ReactNode {
+  _renderItemsWrapper(): React.ReactNode {
+    const {itemWrapperStyle, single, hideSubmitButton, renderItemsWrapper} = this.props;
+    const props: WithChildren<ItemsWrapperProps> = {
+      submitButton: !(single || hideSubmitButton) ? this._renderSubmitButton() : null,
+      children: this._renderItems(),
+      itemWrapperStyle
+    };
+
+    if (renderItemsWrapper) {
+      return renderItemsWrapper(props);
+    } else {
+      return (<ItemsWrapper {...props}/>);
+    }
+
+  }
+
+  _renderIndicatorOpen(): React.ReactNode {
     const {
+      renderIndicatorOpen,
+      indicatorStyle,
+      indicatorOpenStyle
+    } = this.props;
+    const props: IndicatorOpenProps = {
+      onPress: this._submitSelection,
+      indicatorStyle,
+      indicatorOpenStyle,
+    };
+
+    if (renderIndicatorOpen) {
+      return renderIndicatorOpen(props);
+    } else {
+      return (<IndicatorOpen {...props}/>);
+    }
+  }
+
+  _renderSubmitButton(): React.ReactNode {
+    const {
+      renderSubmitButton,
       fontFamily,
+      submitButtonStyle,
+      submitButtonTextStyle,
       submitButtonColor,
       submitButtonText,
-      submitButtonStyle,
-      submitButtonTextStyle
     } = this.props;
+    const props: SubmitButtonProps = {
+      onPress: this._submitSelection,
+      fontFamily,
+      submitButtonStyle,
+      submitButtonTextStyle,
+      submitButtonColor,
+      submitButtonText,
+    };
 
-    return (
-      <TouchableOpacity
-        onPress={() => this._submitSelection()}
-        style={[
-          styles.button,
-          {backgroundColor: submitButtonColor},
-          submitButtonStyle
-        ]}
-      >
-        <Text
-          style={[
-            styles.buttonText,
-            fontFamily ? {fontFamily} : {},
-            submitButtonTextStyle
-          ]}
-        >
-          {submitButtonText}
-        </Text>
-      </TouchableOpacity>
-    );
+    if (renderSubmitButton) {
+      return renderSubmitButton(props);
+    } else {
+      return (<SubmitButton {...props}/>);
+    }
   }
 
-  _renderClosed(): ReactNode {
+  _renderClosed(): React.ReactNode {
     const {
       selectedItems,
       single,
-      fontFamily,
-      altFontFamily,
-      hideSubmitButton,
-      fontSize,
-      textColor,
       hideTags,
-      selectLabelStyle,
-      closedInputWrapperStyle,
-      dropdownViewStyle,
-      indicatorStyle,
-      subSectionStyle
     } = this.props;
-
-    const inputFontFamily: string | undefined = altFontFamily || fontFamily;
 
     return (
       <View>
-        <View style={[styles.dropdownView, dropdownViewStyle]}>
-          <View
-            style={[
-              styles.subSection,
-              subSectionStyle
-            ]}
-          >
-            <TouchableWithoutFeedback onPress={this._toggleSelector}>
-              <View style={[styles.closedInputWrapper, closedInputWrapperStyle]}>
-                <Text
-                  style={[
-                    styles.searchInput,
-                    {
-                      fontSize: fontSize || 16,
-                      color: textColor || colorPack.placeholderTextColor,
-                      ...(inputFontFamily ? {fontFamily: inputFontFamily} : {})
-                    },
-                    selectLabelStyle
-                  ]}
-                  numberOfLines={1}
-                >
-                  {this._getSelectLabel()}
-                </Text>
-                <Icon
-                  name={
-                    hideSubmitButton
-                      ? 'menu-right'
-                      : 'menu-down'
-                  }
-                  style={[styles.indicator, indicatorStyle]}
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </View>
+        {this._renderClosedInput()}
         {!(single || hideTags) && selectedItems.length ? this._renderSelectedItems() : null}
       </View>
     );
   }
 
-  _renderSelectedItems(): ReactNode {
-    const {selectedItemsStyle} = this.props;
-    return (
-      <View
-        style={[styles.selectedItems, selectedItemsStyle]}
-      >
-        {this._displaySelectedItems()}
-      </View>
-    );
+  _renderClosedInput(): React.ReactNode {
+    const {
+      closedInputWrapperStyle,
+      textColor,
+      fontSize,
+      altFontFamily,
+      fontFamily,
+      selectLabelStyle,
+      indicatorStyle,
+      hideSubmitButton,
+      renderClosedInput,
+      subSectionStyle,
+      dropdownViewStyle,
+    } = this.props;
+    const props: ClosedInputProps = {
+      onPress: this._toggleSelector,
+      labelText: this._getSelectLabel(),
+      inputFontFamily: altFontFamily || fontFamily,
+      closedInputWrapperStyle,
+      textColor,
+      fontSize,
+      selectLabelStyle,
+      indicatorStyle,
+      hideSubmitButton,
+      subSectionStyle,
+      dropdownViewStyle,
+    };
+
+    if (renderClosedInput) {
+      return renderClosedInput(props);
+    } else {
+      return (<ClosedInput {...props}/>);
+    }
+  }
+
+  _renderSelectedItems(): React.ReactNode {
+    const {selectedItemsStyle, renderSelectedItems} = this.props;
+    const props: WithChildren<SelectedItemsProps> = {
+      children: this._displaySelectedItems(),
+      selectedItemsStyle
+    };
+
+    if (renderSelectedItems) {
+      return renderSelectedItems(props);
+    } else {
+      return (<SelectedItems {...props}/>);
+    }
+  }
+
+  _renderSelectedItem(item: I): React.ReactNode {
+    const {
+      fontFamily,
+      tagRemoveIconColor,
+      tagBorderColor,
+      uniqueKey,
+      tagTextColor,
+      displayKey,
+      selectedItemStyle,
+      selectedItemExtStyle,
+      selectedItemExtTextStyle,
+      selectedItemExtIconStyle,
+      renderSelectedItem
+    } = this.props;
+
+    const props: SelectedItemProps<I, U, D> = {
+      onRemove: this._removeItem,
+      item,
+      uniqueKey,
+      displayKey,
+      fontFamily,
+      tagRemoveIconColor,
+      tagBorderColor,
+      tagTextColor,
+      selectedItemStyle,
+      selectedItemExtStyle,
+      selectedItemExtTextStyle,
+      selectedItemExtIconStyle,
+    };
+
+    if (renderSelectedItem) {
+      return renderSelectedItem(props);
+    } else {
+      return (<SelectedItem {...props}/>);
+    }
   }
 
   render() {
