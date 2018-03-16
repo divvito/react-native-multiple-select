@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FlatList, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { find, get, reject } from 'lodash';
-import * as escapeStringRegexp from 'escape-string-regexp';
+import escapeStringRegexp from 'escape-string-regexp';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles, { colorPack } from './styles';
 export default class MultiSelect extends React.PureComponent {

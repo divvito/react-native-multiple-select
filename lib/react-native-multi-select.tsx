@@ -13,7 +13,7 @@ import {
   ViewStyle
 } from 'react-native';
 import {find, get, reject} from 'lodash';
-import * as escapeStringRegexp from 'escape-string-regexp';
+import escapeStringRegexp from 'escape-string-regexp';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles, {colorPack} from './styles';
 
