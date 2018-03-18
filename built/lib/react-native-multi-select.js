@@ -3,16 +3,16 @@ import { FlatList, View } from 'react-native';
 import { find, get, reject } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
 import styles, { colorPack } from './styles';
-import SelectedItems from 'components/SelectedItems';
-import NoItems from 'components/NoItems';
-import ClosedInput from 'components/ClosedInput';
-import SubmitButton from 'components/SubmitButton';
-import IndicatorOpen from 'components/IndicatorOpen';
-import ItemsWrapper from 'components/ItemsWrapper';
-import InputGroup from 'components/InputGroup';
-import ItemRow from 'components/ItemRow';
-import ItemRowNew from 'components/ItemRowNew';
-import SelectedItem from 'components/SelectedItem';
+import SelectedItems from './components/SelectedItems';
+import NoItems from './components/NoItems';
+import ClosedInput from './components/ClosedInput';
+import SubmitButton from './components/SubmitButton';
+import IndicatorOpen from './components/IndicatorOpen';
+import ItemsWrapper from './components/ItemsWrapper';
+import InputGroup from './components/InputGroup';
+import ItemRow from './components/ItemRow';
+import ItemRowNew from './components/ItemRowNew';
+import SelectedItem from './components/SelectedItem';
 export default class MultiSelect extends React.PureComponent {
     constructor(props) {
         super(props);

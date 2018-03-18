@@ -3,28 +3,28 @@ import {FlatList, ListRenderItemInfo, StyleProp, TextStyle, View, ViewStyle} fro
 import {find, get, reject} from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
 import styles, {colorPack} from './styles';
-import SelectedItems, {Props as SelectedItemsProps} from 'components/SelectedItems'
-import NoItems, {Props as NoItemsProps} from 'components/NoItems'
-import ClosedInput, {ParentProps as ClosedInputParentProps, Props as ClosedInputProps} from 'components/ClosedInput';
+import SelectedItems, {Props as SelectedItemsProps} from './components/SelectedItems'
+import NoItems, {Props as NoItemsProps} from './components/NoItems'
+import ClosedInput, {ParentProps as ClosedInputParentProps, Props as ClosedInputProps} from './components/ClosedInput';
 import SubmitButton, {
   ParentProps as SubmitButtonParentProps,
   Props as SubmitButtonProps
-} from 'components/SubmitButton';
+} from './components/SubmitButton';
 import IndicatorOpen, {
   ParentProps as IndicatorOpenParentProps,
   Props as IndicatorOpenProps
-} from 'components/IndicatorOpen';
+} from './components/IndicatorOpen';
 import ItemsWrapper, {
   ParentProps as ItemsWrapperParentProps,
   Props as ItemsWrapperProps
-} from 'components/ItemsWrapper';
-import InputGroup, {ParentProps as InputGroupParentProps, Props as InputGroupProps} from 'components/InputGroup';
-import ItemRow, {ParentProps as ItemRowParentProps, Props as ItemRowProps} from 'components/ItemRow';
-import ItemRowNew, {ParentProps as ItemRowNewParentProps, Props as ItemRowNewProps} from 'components/ItemRowNew';
+} from './components/ItemsWrapper';
+import InputGroup, {ParentProps as InputGroupParentProps, Props as InputGroupProps} from './components/InputGroup';
+import ItemRow, {ParentProps as ItemRowParentProps, Props as ItemRowProps} from './components/ItemRow';
+import ItemRowNew, {ParentProps as ItemRowNewParentProps, Props as ItemRowNewProps} from './components/ItemRowNew';
 import SelectedItem, {
   ParentProps as SelectedItemParentProps,
   Props as SelectedItemProps
-} from 'components/SelectedItem';
+} from './components/SelectedItem';
 
 type WithChildren<T> = T & {
   children: React.ReactNode
