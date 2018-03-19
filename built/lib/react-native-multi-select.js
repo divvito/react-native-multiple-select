@@ -285,11 +285,12 @@ export default class MultiSelect extends React.PureComponent {
         }
     }
     _renderItemsWrapper() {
-        const { itemsWrapperStyle, single, hideSubmitButton, renderItemsWrapper } = this.props;
+        const { itemsWrapperStyle, itemsContainerStyle, single, hideSubmitButton, renderItemsWrapper } = this.props;
         const props = {
             submitButton: !(single || hideSubmitButton) ? this._renderSubmitButton() : null,
             children: this._renderItems(),
-            itemsWrapperStyle
+            itemsWrapperStyle,
+            itemsContainerStyle
         };
         if (renderItemsWrapper) {
             return renderItemsWrapper(props);
