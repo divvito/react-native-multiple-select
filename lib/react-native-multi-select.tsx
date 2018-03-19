@@ -154,6 +154,19 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     );
   };
 
+  open = () => {
+    this.setState({
+      selector: true,
+    });
+  };
+
+  close = () => {
+    this.setState({
+      selector: false,
+      searchTerm: ''
+    });
+  };
+
   _onChangeInput = (value: string): void => {
     const {onChangeInput} = this.props;
 

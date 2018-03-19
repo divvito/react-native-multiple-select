@@ -20,6 +20,17 @@ export default class MultiSelect extends React.PureComponent {
             const { selectedItemsExtStyle } = this.props;
             return (React.createElement(View, { style: [styles.selectedItemsExt, selectedItemsExtStyle] }, this._displaySelectedItems(optionalSelectedItems)));
         };
+        this.open = () => {
+            this.setState({
+                selector: true,
+            });
+        };
+        this.close = () => {
+            this.setState({
+                selector: false,
+                searchTerm: ''
+            });
+        };
         this._onChangeInput = (value) => {
             const { onChangeInput } = this.props;
             if (onChangeInput) {
