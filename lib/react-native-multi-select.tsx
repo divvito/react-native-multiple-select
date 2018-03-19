@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FlatList, ListRenderItemInfo, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {FlatList, Keyboard, ListRenderItemInfo, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 import {find, get, reject} from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
 import styles, {colorPack} from './styles';
@@ -299,6 +299,8 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       onSelectedItemsChange,
     } = this.props;
 
+    Keyboard.dismiss();
+
     if (single) {
       this._submitSelection();
       if (onSelectedItemsChange) {
@@ -398,7 +400,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
           extraData={selectedItems}
           keyExtractor={(item: I) => item[uniqueKey!]}
           renderItem={(rowData: ListRenderItemInfo<I>) => this._renderItemRow(rowData.item)}
-          keyboardShouldPersistTaps='always'
+          keyboardShouldPersistTaps='handled'
         />
       );
 

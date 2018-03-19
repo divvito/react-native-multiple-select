@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FlatList, View } from 'react-native';
+import { FlatList, Keyboard, View } from 'react-native';
 import { find, get, reject } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
 import styles, { colorPack } from './styles';
@@ -117,6 +117,7 @@ export default class MultiSelect extends React.PureComponent {
         };
         this._toggleItem = (item) => {
             const { single, uniqueKey, selectedItems, onSelectedItemsChange, } = this.props;
+            Keyboard.dismiss();
             if (single) {
                 this._submitSelection();
                 if (onSelectedItemsChange) {
@@ -175,7 +176,7 @@ export default class MultiSelect extends React.PureComponent {
             let addItemRow = null;
             const renderItems = searchTerm ? this._filterItems(searchTerm) : items;
             if (renderItems.length) {
-                itemList = (React.createElement(FlatList, { data: renderItems, extraData: selectedItems, keyExtractor: (item) => item[uniqueKey], renderItem: (rowData) => this._renderItemRow(rowData.item), keyboardShouldPersistTaps: 'always' }));
+                itemList = (React.createElement(FlatList, { data: renderItems, extraData: selectedItems, keyExtractor: (item) => item[uniqueKey], renderItem: (rowData) => this._renderItemRow(rowData.item), keyboardShouldPersistTaps: 'handled' }));
                 searchTermMatch = renderItems.some(item => item.name === searchTerm);
             }
             else if (!canAddItems) {
