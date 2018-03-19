@@ -114,6 +114,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     itemFontSize: 16,
     selectedItemIconColor: colorPack.primary,
     searchInputPlaceholderText: 'Search',
+    searchInputPlaceholderColor: colorPack.placeholderTextColor,
     searchInputStyle: {color: colorPack.textPrimary},
     textColor: colorPack.textPrimary,
     selectText: 'Select',

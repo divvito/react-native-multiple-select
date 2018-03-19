@@ -12,6 +12,7 @@ export interface OwnProps {
 }
 
 export interface ParentProps {
+  searchInputPlaceholderColor?: string,
   searchInputPlaceholderText?: string,
   searchInputStyle?: StyleProp<TextStyle>,
   inputGroupStyle?: StyleProp<ViewStyle>,
@@ -23,6 +24,7 @@ export type Props = OwnProps & ParentProps;
 export default class InputGroup extends React.PureComponent<Props> {
   render() {
     const {
+      searchInputPlaceholderColor,
       indicatorOpen,
       inputGroupStyle,
       searchIconStyle,
@@ -47,7 +49,7 @@ export default class InputGroup extends React.PureComponent<Props> {
           blurOnSubmit={false}
           onSubmitEditing={onAdd}
           placeholder={searchInputPlaceholderText}
-          placeholderTextColor={colorPack.placeholderTextColor}
+          placeholderTextColor={searchInputPlaceholderColor}
           underlineColorAndroid="transparent"
           style={[styles.searchInput, searchInputStyle]}
           value={searchTerm}

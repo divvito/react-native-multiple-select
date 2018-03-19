@@ -6,7 +6,7 @@ export interface Props {
   itemContainerStyle?: StyleProp<ViewStyle>,
   noItemsTextStyle?: StyleProp<TextStyle>,
   fontFamily?: string,
-  noItemsText: string
+  noItemsText?: string
 }
 
 export default class NoItems extends React.PureComponent<Props> {

@@ -416,6 +416,7 @@ MultiSelect.defaultProps = {
     itemFontSize: 16,
     selectedItemIconColor: colorPack.primary,
     searchInputPlaceholderText: 'Search',
+    searchInputPlaceholderColor: colorPack.placeholderTextColor,
     searchInputStyle: { color: colorPack.textPrimary },
     textColor: colorPack.textPrimary,
     selectText: 'Select',
