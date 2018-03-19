@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import {StyleProp, TextInput, TextStyle, View, ViewStyle} from 'react-native';
 import styles, {colorPack} from "../styles";
-import {Icon} from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export interface OwnProps {
   indicatorOpen: ReactNode,

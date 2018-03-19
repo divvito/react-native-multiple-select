@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 import styles from "../styles";
-import {Icon} from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {BaseItem} from "../react-native-multi-select";
 
 export interface OwnProps<I extends BaseItem, U extends keyof I, D extends keyof I> {

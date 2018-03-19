@@ -1,7 +1,7 @@
 import styles, {colorPack} from "../styles";
 import * as React from 'react';
 import {StyleProp, Text, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
-import {Icon} from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export interface OwnProps {
   inputFontFamily?: string,

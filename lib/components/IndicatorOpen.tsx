@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {StyleProp, TextStyle, TouchableOpacity} from 'react-native';
 import styles from "../styles";
-import {Icon} from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export interface OwnProps {
   onPress: () => void,

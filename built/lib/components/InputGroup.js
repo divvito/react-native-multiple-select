@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TextInput, View } from 'react-native';
 import styles, { colorPack } from "../styles";
-import { Icon } from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 export default class InputGroup extends React.PureComponent {
     render() {
         const { indicatorOpen, inputGroupStyle, searchIconStyle, searchInputPlaceholderText, searchTerm, searchInputStyle, onChange, onAdd, } = this.props;

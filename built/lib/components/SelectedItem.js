@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import styles from "../styles";
-import { Icon } from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 export default class SelectedItem extends React.PureComponent {
     render() {
         const { item, fontFamily, tagRemoveIconColor, tagBorderColor, uniqueKey, tagTextColor, displayKey, selectedItemStyle, selectedItemExtStyle, selectedItemExtTextStyle, selectedItemExtIconStyle, onRemove, } = this.props;

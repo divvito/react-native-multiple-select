@@ -1,7 +1,7 @@
 import styles, { colorPack } from "../styles";
 import * as React from 'react';
 import { Text, TouchableWithoutFeedback, View } from 'react-native';
-import { Icon } from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 export default class ClosedInput extends React.PureComponent {
     render() {
         const { onPress, closedInputWrapperStyle, textColor, fontSize, inputFontFamily, selectLabelStyle, indicatorStyle, hideSubmitButton, labelText, subSectionStyle, dropdownViewStyle, } = this.props;

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
 import styles from "../styles";
-import { Icon } from "react-native-vector-icons/Icon";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 export default class IndicatorOpen extends React.PureComponent {
     render() {
         const { indicatorStyle, indicatorOpenStyle, onPress } = this.props;
