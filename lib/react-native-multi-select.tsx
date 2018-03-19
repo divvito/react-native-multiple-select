@@ -398,6 +398,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
           extraData={selectedItems}
           keyExtractor={(item: I) => item[uniqueKey!]}
           renderItem={(rowData: ListRenderItemInfo<I>) => this._renderItemRow(rowData.item)}
+          keyboardShouldPersistTaps='always'
         />
       );
 

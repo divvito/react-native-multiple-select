@@ -175,7 +175,7 @@ export default class MultiSelect extends React.PureComponent {
             let addItemRow = null;
             const renderItems = searchTerm ? this._filterItems(searchTerm) : items;
             if (renderItems.length) {
-                itemList = (React.createElement(FlatList, { data: renderItems, extraData: selectedItems, keyExtractor: (item) => item[uniqueKey], renderItem: (rowData) => this._renderItemRow(rowData.item) }));
+                itemList = (React.createElement(FlatList, { data: renderItems, extraData: selectedItems, keyExtractor: (item) => item[uniqueKey], renderItem: (rowData) => this._renderItemRow(rowData.item), keyboardShouldPersistTaps: 'always' }));
                 searchTermMatch = renderItems.some(item => item.name === searchTerm);
             }
             else if (!canAddItems) {
