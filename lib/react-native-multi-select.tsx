@@ -535,11 +535,11 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
   }
 
   _renderItemsWrapper(): React.ReactNode {
-    const {itemWrapperStyle, single, hideSubmitButton, renderItemsWrapper} = this.props;
+    const {itemsWrapperStyle, single, hideSubmitButton, renderItemsWrapper} = this.props;
     const props: WithChildren<ItemsWrapperProps> = {
       submitButton: !(single || hideSubmitButton) ? this._renderSubmitButton() : null,
       children: this._renderItems(),
-      itemWrapperStyle
+      itemsWrapperStyle
     };
 
     if (renderItemsWrapper) {

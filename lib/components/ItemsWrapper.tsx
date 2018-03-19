@@ -8,17 +8,17 @@ export interface OwnProps {
 }
 
 export interface ParentProps {
-  itemWrapperStyle?: StyleProp<ViewStyle>,
+  itemsWrapperStyle?: StyleProp<ViewStyle>,
 }
 
 export type Props = OwnProps & ParentProps;
 
 export default class ItemsWrapper extends React.PureComponent<Props> {
   render() {
-    const {itemWrapperStyle, submitButton, children} = this.props;
+    const {itemsWrapperStyle, submitButton, children} = this.props;
 
     return (
-      <View style={[styles.itemsWrapper, itemWrapperStyle]}>
+      <View style={[styles.itemsWrapper, itemsWrapperStyle]}>
         <View>{children}</View>
         {submitButton}
       </View>
