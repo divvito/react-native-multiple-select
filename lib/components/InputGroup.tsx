@@ -46,13 +46,14 @@ export default class InputGroup extends React.PureComponent<Props> {
         <TextInput
           autoFocus
           onChangeText={onChange}
-          blurOnSubmit={false}
+          blurOnSubmit={true}
           onSubmitEditing={onAdd}
           placeholder={searchInputPlaceholderText}
           placeholderTextColor={searchInputPlaceholderColor}
           underlineColorAndroid="transparent"
           style={[styles.searchInput, searchInputStyle]}
           value={searchTerm}
+          disableFullscreenUI
         />
         {indicatorOpen}
       </View>
