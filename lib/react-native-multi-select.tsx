@@ -82,7 +82,8 @@ type Props<I extends BaseItem, U extends keyof I, D extends keyof I> =
   onAddItem?: (items: I[]) => void,
   onChangeInput?: (value: string) => void,
   getSelectLabel?: (params: { selectText?: string, single?: boolean, selectedItems?: (I[U])[], displayKey?: D }) => string
-  getNewItemLabel?: (name: string) => string
+  getNewItemLabel?: (name: string) => string,
+  allowAdd?: boolean
 }
 
 type DefaultItem = {
@@ -134,6 +135,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
     disabledItemColor: 'grey',
     noItemsText: 'No item to display.',
     getNewItemLabel: (name: string) => `Add ${name} (tap or press return)`,
+    allowAdd: false
   };
   static SEARCH_SPLIT_REGEXP: RegExp = /[ \-:]+/;
 
@@ -280,27 +282,32 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       selectedItems,
       onSelectedItemsChange,
       onAddItem,
+      allowAdd
     } = this.props;
-    const {searchTerm} = this.state;
 
-    if (searchTerm) {
-      const newItemId: string = searchTerm
-        .split(' ')
-        .filter(word => word.length)
-        .join('-');
-      const newItem: I = {
-        [uniqueKey]: newItemId,
-        [displayKey!]: searchTerm
-      } as any as I;
+    if (allowAdd) {
+      const {searchTerm} = this.state;
 
-      if (onAddItem) {
-        onAddItem([...items, newItem]);
+      if (searchTerm) {
+        const newItemId: string = searchTerm
+          .split(' ')
+          .filter(word => word.length)
+          .join('-');
+        const newItem: I = {
+          [uniqueKey]: newItemId,
+          [displayKey!]: searchTerm
+        } as any as I;
+
+        if (onAddItem) {
+          onAddItem([...items, newItem]);
+        }
+        if (onSelectedItemsChange) {
+          onSelectedItemsChange([...selectedItems, newItem[uniqueKey]]);
+        }
+
+        this._clearSearchTerm();
       }
-      if (onSelectedItemsChange) {
-        onSelectedItemsChange([...selectedItems, newItem[uniqueKey]]);
-      }
 
-      this._clearSearchTerm();
     }
   };
 
@@ -528,7 +535,7 @@ export default class MultiSelect<I extends BaseItem, U extends keyof I, D extend
       searchIconStyle,
       searchInputPlaceholderText,
       searchInputStyle,
-      renderInputGroup,
+      renderInputGroup
     } = this.props;
     const {searchTerm} = this.state;
     const props: InputGroupProps = {
