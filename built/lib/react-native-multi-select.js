@@ -106,24 +106,26 @@ export default class MultiSelect extends React.PureComponent {
             return selectedItems.indexOf(item[uniqueKey]) !== -1;
         };
         this._addItem = () => {
-            const { uniqueKey, displayKey, items, selectedItems, onSelectedItemsChange, onAddItem, } = this.props;
-            const { searchTerm } = this.state;
-            if (searchTerm) {
-                const newItemId = searchTerm
-                    .split(' ')
-                    .filter(word => word.length)
-                    .join('-');
-                const newItem = {
-                    [uniqueKey]: newItemId,
-                    [displayKey]: searchTerm
-                };
-                if (onAddItem) {
-                    onAddItem([...items, newItem]);
+            const { uniqueKey, displayKey, items, selectedItems, onSelectedItemsChange, onAddItem, allowAdd } = this.props;
+            if (allowAdd) {
+                const { searchTerm } = this.state;
+                if (searchTerm) {
+                    const newItemId = searchTerm
+                        .split(' ')
+                        .filter(word => word.length)
+                        .join('-');
+                    const newItem = {
+                        [uniqueKey]: newItemId,
+                        [displayKey]: searchTerm
+                    };
+                    if (onAddItem) {
+                        onAddItem([...items, newItem]);
+                    }
+                    if (onSelectedItemsChange) {
+                        onSelectedItemsChange([...selectedItems, newItem[uniqueKey]]);
+                    }
+                    this._clearSearchTerm();
                 }
-                if (onSelectedItemsChange) {
-                    onSelectedItemsChange([...selectedItems, newItem[uniqueKey]]);
-                }
-                this._clearSearchTerm();
             }
         };
         this._toggleItem = (item) => {
@@ -276,7 +278,7 @@ export default class MultiSelect extends React.PureComponent {
             this._renderItemsWrapper()));
     }
     _renderInputGroup() {
-        const { hideSubmitButton, inputGroupStyle, searchIconStyle, searchInputPlaceholderText, searchInputStyle, renderInputGroup, } = this.props;
+        const { hideSubmitButton, inputGroupStyle, searchIconStyle, searchInputPlaceholderText, searchInputStyle, renderInputGroup } = this.props;
         const { searchTerm } = this.state;
         const props = {
             indicatorOpen: hideSubmitButton ? this._renderIndicatorOpen() : null,
@@ -449,5 +451,6 @@ MultiSelect.defaultProps = {
     disabledItemColor: 'grey',
     noItemsText: 'No item to display.',
     getNewItemLabel: (name) => `Add ${name} (tap or press return)`,
+    allowAdd: false
 };
 MultiSelect.SEARCH_SPLIT_REGEXP = /[ \-:]+/;
